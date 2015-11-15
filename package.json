@@ -4,6 +4,9 @@
     "dependencies": {
         "express": "~4.0.0",
         "mongoose": "~4.1.9",
-        "body-parser": "~1.0.1"
+        "body-parser": "~1.0.1",
+        "bcrypt-nodejs": "0.0.3",
+        "passport": "^0.2.0",
+    	"passport-http": "^0.2.2"
     }
 }

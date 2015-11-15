@@ -21,6 +21,11 @@ mongoose.connect('mongodb://restful_calendar_admin:restful_calendar_password@ds0
 var Event 		= require('./app/models/event')
 var User 		= require('./app/models/user')
 
+// for password authentification
+var passport = require('passport');
+var authController = require('./controllers/auth');
+app.use(passport.initialize());
+
 // ROUTES FOR OUR API
 //===============================================================
 var router = express.Router();			// get an instance of the express router
@@ -45,13 +50,11 @@ router.get('/', function(req, res) {
 router.route('/events')
 
 	// create an event (accessed at POST http://localhost:8080/api/events)
-	.post(function(req, res) {
-		console.log('HERE');
-
+	.post(authController.isAuthenticated, function(req, res) {
 		var cal_event = new Event(); // create a new instance of the event model
-		cal_event.OWNER = req.body.OWNER; // set the event name (comes from request)
-		cal_event.DTSTART = new Date().toISOString();
-		cal_event.DTEND = new Date().toISOString();
+		cal_event.OWNER = req.user.username; // set the event name (comes from request)
+		cal_event.DTSTART = req.body.DTSTART;
+		cal_event.DTEND = req.body.DTEND;
 		cal_event.SUMMARY = req.body.SUMMARY;
 		cal_event.STATUS = req.body.STATUS;
 		cal_event.FREQ = req.body.FREQ;
@@ -65,13 +68,13 @@ router.route('/events')
 			if (err)
 				res.send(err);
 
-			res.json({message: 'Event has been created.'});
+			res.json({message: 'Event has been created with id:' + cal_event._id +'.'});
 		});
 	})
 
 	// get all the events (accessed at GET http://localhost:8080/api/events)
-	.get(function(req, res) {
-		Event.find(function(err, events) {
+	.get(authController.isAuthenticated, function(req, res) {
+		Event.find({OWNER: req.user.username}, function(err, events) {
 			if (err)
 				res.send(err);
 
@@ -84,17 +87,17 @@ router.route('/events')
 router.route('/events/search')
 
 	//search through the events
-	.get(function(req, res) {
+	.get(authController.isAuthenticated, function(req, res) {
 
 		query = {};
+
+		query.OWNER = req.user.username;
 
 		if (req.param('SUMMARY') != undefined)
 			query.SUMMARY = {$regex : ".*" + req.param('SUMMARY') + ".*"};
 
     	if (req.param('DTSTART') != undefined)
     		query.DTSTART = req.param('DTSTART');
-
-    	console.log(query);
 
 		Event.find(query, function(err, results) {
     		if (err)
@@ -108,7 +111,7 @@ router.route('/events/search')
 router.route('/events/:event_id')
 
 	// get the event with that id (accessed at GET http://localhost:8080/api/events/:event_id)
-	.get(function(req, res) {
+	.get(authController.isAuthenticated, function(req, res) {
 		Event.findById(req.params.event_id, function(err, cal_event) {
 			if (err)
 				res.send(err);
@@ -117,16 +120,15 @@ router.route('/events/:event_id')
 	})
 
 	// update the cal_event with this id (accessed at PUT http://localhost:8080/api/events/:event_id)
-	.put(function(req, res) {
+	.put(authController.isAuthenticated, function(req, res) {
 
 		// use the event model to find the event that we want
 		Event.findById(req.params.event_id, function(err, cal_event) {
 			if (err)
 				res.send(err);
 
-			cal_event.OWNER = req.body.OWNER; // set the event name (comes from request)
-			cal_event.DTSTART = new Date().toISOString();
-			cal_event.DTEND = new Date().toISOString();
+			cal_event.DTSTART = req.body.DTSTART;  // set the event name (comes from request)
+			cal_event.DTEND = req.body.DTEND;
 			cal_event.SUMMARY = req.body.SUMMARY;
 			cal_event.STATUS = req.body.STATUS;
 			cal_event.FREQ = req.body.FREQ;
@@ -146,7 +148,7 @@ router.route('/events/:event_id')
 	})
 
 	// delete the event with this id (access at DELETE http://localhost:8080/api/events/:event_id)
-	.delete(function(req, res) {
+	.delete(authController.isAuthenticated, function(req, res) {
 		Event.remove({
 			_id: req.params.event_id
 		}, function(err, cal_event) {
@@ -164,8 +166,6 @@ router.route('/users')
 
 	// create a user (accessed at POST http://localhost:8080/api/users)
 	.post(function(req, res) {
-		console.log('HERE');
-
 		var user = new User(); // create a new instance of the user model
 		user.username = req.body.username; // set the user name (comes from request)
 		user.password = req.body.password;
@@ -180,7 +180,7 @@ router.route('/users')
 	})
 
 	// get all the users (accessed at GET http://localhost:8080/api/users)
-	.get(function(req, res) {
+	.get(authController.isAuthenticated, function(req, res) {
 		User.find(function(err, users) {
 			if (err)
 				res.send(err);
@@ -194,7 +194,7 @@ router.route('/users')
 router.route('/users/search')
 
 	//search through the users
-	.get(function(req, res) {
+	.get(authController.isAuthenticated, function(req, res) {
 
 		// query database for username
 		query = req.param('username') != undefined ? {username : {$regex : ".*" + req.param('username') + ".*"}} : {};
@@ -213,7 +213,7 @@ router.route('/users/search')
 router.route('/users/:user_id')
 
 	// get the user with that id (accessed at GET http://localhost:8080/api/users/:user_id)
-	.get(function(req, res) {
+	.get(authController.isAuthenticated, function(req, res) {
 		User.findById(req.params.user_id, function(err, user) {
 			if (err)
 				res.send(err);
@@ -222,7 +222,7 @@ router.route('/users/:user_id')
 	})
 
 	// update the user with this id (accessed at PUT http://localhost:8080/api/users/:user_id)
-	.put(function(req, res) {
+	.put(authController.isAuthenticated, function(req, res) {
 
 		// use the user model to find the user that we want
 		User.findById(req.params.user_id, function(err, user) {
@@ -242,7 +242,7 @@ router.route('/users/:user_id')
 	})
 
 	// delete the user with this id (access at DELETE http://localhost:8080/api/users/:user_id)
-	.delete(function(req, res) {
+	.delete(authController.isAuthenticated, function(req, res) {
 		User.remove({
 			_id: req.params.user_id
 		}, function(err, user) {
