@@ -49,9 +49,16 @@ router.route('/events')
 		console.log('HERE');
 
 		var cal_event = new Event(); // create a new instance of the event model
-		cal_event.title = req.body.title; // set the event name (comes from request)
-		cal_event.description = req.body.description;
-		cal_event.date = new Date().toISOString();
+		cal_event.OWNER = req.body.OWNER; // set the event name (comes from request)
+		cal_event.DTSTART = new Date().toISOString();
+		cal_event.DTEND = new Date().toISOString();
+		cal_event.SUMMARY = req.body.SUMMARY;
+		cal_event.STATUS = req.body.STATUS;
+		cal_event.FREQ = req.body.FREQ;
+		cal_event.UNTIL = req.body.UNTIL;
+		cal_event.INTERVAL = req.body.INTERVAL;
+		cal_event.BYDAY = req.body.BYDAY;
+		cal_event.DESCRIPTION = req.body.DESCRIPTION;
 
 		// save the event and check for errors
 		cal_event.save(function(err) {
@@ -79,18 +86,17 @@ router.route('/events/search')
 	//search through the events
 	.get(function(req, res) {
 
-		// query database for specified title and date
-		var search_title = ".*" + req.param('title') + ".*";
-		var search_date = ".*" + req.param('date') + ".*";
+		query = {};
 
-		// in case of undefined parameters
-		if (search_title == ".*undefined.*")
-			search_title = ".*";
+		if (req.param('SUMMARY') != undefined)
+			query.SUMMARY = {$regex : ".*" + req.param('SUMMARY') + ".*"};
 
-		if (search_date == ".*undefined.*")
-			search_date = ".*";
+    	if (req.param('DTSTART') != undefined)
+    		query.DTSTART = req.param('DTSTART');
 
-		Event.find({'title' : {$regex : search_title}, 'date' : {$regex : search_date}}, function(err, results) {
+    	console.log(query);
+
+		Event.find(query, function(err, results) {
     		if (err)
 				res.send(err);
 			res.json(results);
@@ -118,7 +124,16 @@ router.route('/events/:event_id')
 			if (err)
 				res.send(err);
 
-			cal_event.title = req.body.title;
+			cal_event.OWNER = req.body.OWNER; // set the event name (comes from request)
+			cal_event.DTSTART = new Date().toISOString();
+			cal_event.DTEND = new Date().toISOString();
+			cal_event.SUMMARY = req.body.SUMMARY;
+			cal_event.STATUS = req.body.STATUS;
+			cal_event.FREQ = req.body.FREQ;
+			cal_event.UNTIL = req.body.UNTIL;
+			cal_event.INTERVAL = req.body.INTERVAL;
+			cal_event.BYDAY = req.body.BYDAY;
+			cal_event.DESCRIPTION = req.body.DESCRIPTION;
 
 			// save the event
 			cal_event.save(function(err) {
@@ -181,14 +196,12 @@ router.route('/users/search')
 	//search through the users
 	.get(function(req, res) {
 
-		// query database for specified title and date
-		var search_username = ".*" + req.param('username') + ".*";
+		// query database for username
+		query = req.param('username') != undefined ? {username : {$regex : ".*" + req.param('username') + ".*"}} : {};
 
-		// in case of undefined parameters
-		if (search_username == ".*undefined.*")
-			search_username = ".*";
+    	console.log(query);
 
-		User.find({'username' : {$regex : search_username}}, function(err, results) {
+		User.find(query, function(err, results) {
     		if (err)
 				res.send(err);
 			res.json(results);

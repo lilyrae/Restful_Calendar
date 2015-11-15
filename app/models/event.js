@@ -4,9 +4,16 @@ var mongoose	= require('mongoose');
 var Schema		= mongoose.Schema;
 
 var EventSchema	= new Schema({
-	title: String,
-	description: String,
-	date: String
+	OWNER: {type: String, required: true},
+	DTSTART: {type: Date, required: true},
+	DTEND: {type: Date, required: true},
+	SUMMARY: {type: String, required: true},
+	STATUS: String,
+	FREQ: String,
+	UNTIL: Date,
+	INTERVAL: Number,
+	BYDAY: String,
+	DESCRIPTION: String
 
 });
 
