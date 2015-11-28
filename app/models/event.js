@@ -8,6 +8,7 @@ var EventSchema	= new Schema({
 	DTSTART: {type: Date, required: true},
 	DTEND: {type: Date, required: true},
 	SUMMARY: {type: String, required: true},
+	SUMMARY_LC: {type: String, required: true},
 	STATUS: String,
 	FREQ: String,
 	UNTIL: Date,
