@@ -1,0 +1,23 @@
+[
+  {
+    "id": "5659de4ae0ad52e71afee3c1",
+    "title": "Today",
+    "start": "2015-11-28T17:02:44.372Z",
+    "end": "2015-11-29T17:02:44.372Z",    
+    "allDay": "true"
+  },
+  {
+    "id": "5659de79e0ad52e71afee3c2",
+    "title": "Tomorrow",
+    "start": "2015-11-28T17:02:44.372Z",
+    "end": "2015-11-28T17:02:44.372Z",
+    "allDay": "false"
+  },
+  {
+    "id": "5659eb3daf493f681d3bda4f",
+    "title": "the other DAY",
+    "start": "2005-11-28T17:02:44.372Z",
+    "end": "2006-11-28T17:02:44.372Z",
+    "allDay": "false"
+  }
+]

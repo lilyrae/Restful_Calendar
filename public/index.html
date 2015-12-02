@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>My Restful Calendar</title>
+	<link rel='stylesheet' href='/public/fullcalendar/fullcalendar.css' />
+	<script src='/public/fullcalendar/lib/jquery.min.js'></script>
+	<script src='/public/fullcalendar/lib/moment.min.js'></script>
+	<script src='/public/fullcalendar/fullcalendar.js'></script>
+	<script>
+		$(document).ready(function() {
+
+	    // page is now ready, initialize the calendar.
+
+		    $('#calendar').fullCalendar({
+		        // put your options and callbacks here
+		        events: {
+			        url: '/public/events.json',
+			        color: 'yellow',   // a non-ajax option
+			        textColor: 'black' // a non-ajax option
+			    }
+		    });
+
+		});
+	</script>
+</head>
+<body>
+	<h1>My Calendar</h1>
+	<div id='calendar'></div>
+
+</body>
+</html>

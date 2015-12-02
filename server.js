@@ -18,13 +18,19 @@ var port 		= process.env.PORT || 8080;	// set our port
 var mongoose	= require('mongoose');
 mongoose.connect('mongodb://restful_calendar_admin:restful_calendar_password@ds047524.mongolab.com:47524/restful_calendar'); // connect to database
 
-var Event 		= require('./app/models/event')
-var User 		= require('./app/models/user')
+// databases
+var Event 		= require('./app/models/event');
+var User 		= require('./app/models/user');
 
 // for password authentification
 var passport = require('passport');
 var authController = require('./controllers/auth');
 app.use(passport.initialize());
+
+var exportController = require('./controllers/export');
+
+// for static files
+app.use('/public', express.static(__dirname + '/public'));
 
 // ROUTES FOR OUR API
 //===============================================================
@@ -40,10 +46,19 @@ router.use(function(req, res, next) {
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
-	res.json({ message: 'howdie partner! welcome to the API'});
+	// in new express versions, updated to sendFile
+	res.json({message: 'Howdie partner!'});
 });
 
 // more routes for the API to be placed here
+
+router.route('/calendar')
+
+	.get(authController.isAuthenticated, function(req, res) {
+		// in new express versions, updated to sendFile
+		res.sendfile('public/index.html');
+	});
+
 
 // on routes that end in /events
 // ==============================================================
@@ -56,6 +71,7 @@ router.route('/events')
 		cal_event.DTSTART = req.body.DTSTART;
 		cal_event.DTEND = req.body.DTEND;
 		cal_event.SUMMARY = req.body.SUMMARY;
+		cal_event.SUMMARY_LC = (cal_event.SUMMARY).toLowerCase();
 		cal_event.STATUS = req.body.STATUS;
 		cal_event.FREQ = req.body.FREQ;
 		cal_event.UNTIL = req.body.UNTIL;
@@ -94,7 +110,7 @@ router.route('/events/search')
 		query.OWNER = req.user.username;
 
 		if (req.param('SUMMARY') != undefined)
-			query.SUMMARY = {$regex : ".*" + req.param('SUMMARY') + ".*"};
+			query.SUMMARY_LC = {$regex : ".*" + (req.param('SUMMARY')).toLowerCase() + ".*"};
 
     	if (req.param('DTSTART') != undefined)
     		query.DTSTART = req.param('DTSTART');
@@ -105,6 +121,13 @@ router.route('/events/search')
 			res.json(results);
   		});
 	});
+
+// on routes that end in /events/export to export calendar into other applications
+// ---------------------------------------------------------------
+router.route('/events/export')
+
+	// get all the events and export into ics file
+	.get(authController.isAuthenticated, exportController.printICal);
 
 // on routes that end in /events/:event_id
 // ----------------------------------------------------------------
@@ -130,6 +153,7 @@ router.route('/events/:event_id')
 			cal_event.DTSTART = req.body.DTSTART;  // set the event name (comes from request)
 			cal_event.DTEND = req.body.DTEND;
 			cal_event.SUMMARY = req.body.SUMMARY;
+			cal_event.SUMMARY_LC = (cal_event.SUMMARY).toLowerCase();
 			cal_event.STATUS = req.body.STATUS;
 			cal_event.FREQ = req.body.FREQ;
 			cal_event.UNTIL = req.body.UNTIL;

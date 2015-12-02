@@ -14,8 +14,6 @@ exports.printICal = function(req, res) {
 
   		.on('data', function(cal_event){
 		    // add events to export string
-		    console.log("Entered portal");
-
 		    iCal += "BEGIN:VEVENT\r\n";
 		    iCal += "UID:" + cal_event._id + "\r\n";
 		    iCal += "SUMMARY:" + cal_event.SUMMARY + "\r\n";
@@ -30,32 +28,24 @@ exports.printICal = function(req, res) {
 		    	iCal += "DESCRIPTION:" + cal_event.DESCRIPTION + "\r\n";
 
 		    // for recurring events, add information together into recurring_str
+		    // all recurring events have a frequency defined
 		    var recurring_str = "";
-		    var isRecurring = false;
 
 		    if (cal_event.FREQ != undefined) {
 		    	recurring_str += "FREQ=" + cal_event.FREQ + ";";
-		    	isRecurring = true;
-		    }
+		    
+		    	if (cal_event.UNTIL != undefined)
+		    		recurring_str += "UNTIL=" + (cal_event.UNTIL).toISOString() + ";";
 
-		    if (cal_event.UNTIL != undefined) {
-		    	recurring_str += "UNTIL=" + (cal_event.UNTIL).toISOString() + ";";
-		    	isRecurring = true;
-		    }
+		    	if (cal_event.INTERVAL != undefined)
+		    		recurring_str += "INTERVAL=" + cal_event.INTERVAL + ";";
 
-		    if (cal_event.INTERVAL != undefined) {
-		    	recurring_str += "INTERVAL=" + cal_event.INTERVAL + ";";
-		    	isRecurring = true;
-		    }
+			    if (cal_event.BYDAY != undefined) 
+			    	recurring_str += "BYDAY=" + cal_event.BYDAY + ";";
 
-		    if (cal_event.BYDAY != undefined) {
-		    	recurring_str += "BYDAY=" + cal_event.BYDAY + ";";
-		    	isRecurring = true;
-		    }
-
-		    // add recurring_str to iCal
-		    if (isRecurring)
+			    // add recurring_str to iCal
 		    	iCal += "RRULE:" + recurring_str.slice(0, -1) + "\r\n";
+		    }
 
 		    iCal += "END:VEVENT\r\n";
 
